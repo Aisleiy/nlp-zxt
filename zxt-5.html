@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>二次元性格匹配测试</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .question {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 14px;
+      color: #555;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-content {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>二次元性格匹配测试</h1>
+  <form id="quiz-form">
+    <!-- 动态生成 25 道题 -->
+  </form>
+  <div id="result"></div>
+
+  <script>
+    // 1. 问题列表（25题）
+    const questions = [
+      "我更喜欢主动与人交往还是独自思考？",
+      "面对问题，我倾向于用冷静分析还是情感判断？",
+      "我喜欢制定计划并严格执行，还是随心而行？",
+      "遇到新事物，我兴奋尝试还是谨慎观望？",
+      "做重要决定时，我通常果断还是犹豫不决？",
+      "我更关注团队利益还是个人目标？",
+      "我倾向遵守规则还是挑战规则？",
+      "我轻易信任他人还是多疑谨慎？",
+      "我更喜欢竞争还是合作？",
+      "我喜欢冒险刺激还是安全稳定？",
+      "在危机时我会优先保护弱者还是先顾及自身安全？",
+      "我是否愿意为信念牺牲自己？",
+      "我在表现自我时更趋于夸张还是简单低调？",
+      "当同伴遇到困难时，我会主动伸出援手吗？",
+      "我的言语中更常带有幽默还是严肃？",
+      "我更倾向遵从内心还是服从命令？",
+      "我对未知事物抱有恐惧还是好奇？",
+      "面对失败，我更会自我反省还是责怪外部？",
+      "我是否愿意承担领导责任？",
+      "我在群体中是否喜欢成为焦点？",
+      "我更常凭直觉行动还是依赖数据？",
+      "我是否在挑战中感到兴奋？",
+      "我是否善于隐藏自己的真实情感？",
+      "在团队决策中，我是否坚持己见？",
+      "我更注重过程体验还是结果达成？"
+    ];
+
+    // 2. 滑动条两端提示标签（25组）
+    const sliderLabels = [
+      {left: "主动交往", right: "独自思考"},        // Q0
+      {left: "冷静分析", right: "情感判断"},          // Q1
+      {left: "计划执行", right: "随心而行"},          // Q2
+      {left: "兴奋尝试", right: "谨慎观望"},          // Q3
+      {left: "果断", right: "犹豫"},                  // Q4
+      {left: "团队利益", right: "个人目标"},          // Q5
+      {left: "遵守规则", right: "挑战规则"},          // Q6
+      {left: "轻易信任", right: "多疑谨慎"},          // Q7
+      {left: "竞争", right: "合作"},                  // Q8
+      {left: "冒险刺激", right: "安全稳定"},          // Q9
+      {left: "保护弱者", right: "顾及自身"},          // Q10
+      {left: "为信念牺牲", right: "保全自己"},        // Q11
+      {left: "夸张", right: "低调"},                  // Q12
+      {left: "不伸援手", right: "主动援手"},          // Q13
+      {left: "幽默", right: "严肃"},                  // Q14
+      {left: "遵从内心", right: "服从命令"},          // Q15
+      {left: "恐惧未知", right: "好奇"},              // Q16
+      {left: "自我反省", right: "责怪外部"},          // Q17
+      {left: "不承担", right: "愿意领导"},            // Q18
+      {left: "不爱出头", right: "成为焦点"},          // Q19
+      {left: "凭直觉", right: "依赖数据"},            // Q20
+      {left: "不兴奋", right: "热情挑战"},            // Q21
+      {left: "坦露情感", right: "善于隐藏"},          // Q22
+      {left: "随波逐流", right: "坚持己见"},          // Q23
+      {left: "过程体验", right: "结果导向"}           // Q24
+    ];
+
+    // 3. 角色数据（部分示例）
+    const characters = [
+      { name:"冈崎朋也","anime":"CLANNAD","traits":[2,3,6,2,3,2,2,2,1,1,2,1,1,4,2],
+        keywords:["冷漠","自我","成长"], quote:"活着，才有可能改变一切。"},
+      { name:"铃原礼央","anime":"CLANNAD","traits":[6,5,4,5,6,7,3,5,6,5,6,6,6,7,6],
+        keywords:["乐观","关怀","热情"], quote:"不管多么黑暗，总会有光的。"},
+      { name:"鲁路修·兰佩路基","anime":"叛逆的鲁鲁修","traits":[3,7,7,6,7,2,7,2,6,3,7,4,3,2,5],
+        keywords:["野心","策略","冷静"], quote:"我，鲁路修·兰佩路基，要改变世界。"},
+      { name:"C.C.","anime":"叛逆的鲁鲁修","traits":[4,7,3,5,4,3,6,3,2,2,6,2,1,1,4],
+        keywords:["神秘","超然","孤独"], quote:"一切都只是交易。"},
+      { name:"岡部倫太郎","anime":"命运石之门","traits":[5,7,5,5,6,4,4,4,3,2,6,6,5,3,5],
+        keywords:["执着","疯狂","机智"], quote:"我是狂气的疯狂科学家！"},
+      { name:"牧濑红莉栖","anime":"命运石之门","traits":[4,7,6,4,6,3,3,5,3,2,5,4,3,3,6],
+        keywords:["理智","天才","温柔"], quote:"科学是令人着迷的。"},
+      { name:"后藤一里之助","anime":"孤独摇滚","traits":[2,3,6,2,3,2,2,2,1,1,2,1,1,4,2],
+        keywords:["内向","温柔","努力"], quote:"音乐是我的救赎。"},
+      { name:"宫前透","anime":"药屋少女的呢喃","traits":[3,5,7,3,5,6,2,6,2,1,5,3,2,3,7],
+        keywords:["聪慧","好奇","善良"], quote:"请告诉我更多。"},
+      { name:"弗莉莲","anime":"葬送的芙莉莲","traits":[2,7,4,4,5,3,5,2,2,2,6,2,2,2,4],
+        keywords:["超然","孤独","温暖"], quote:"人类的时间，真是宝贵。"},
+      { name:"堀京子","anime":"堀与宫村","traits":[3,4,5,3,4,5,3,4,4,2,4,3,3,4,5],
+        keywords:["冷静","内敛","努力"], quote:"不要小看我。"},
+      { name:"宫村伊澄","anime":"堀与宫村","traits":[5,5,4,4,5,6,2,5,3,3,5,5,4,5,5],
+        keywords:["善良","热心","包容"], quote:"我会一直在你身边。"},
+      { name:"高须龙儿","anime":"龙与虎","traits":[2,4,3,2,3,2,2,3,2,2,2,3,2,3,3],
+        keywords:["孤傲","认真","脆弱"], quote:"我不需要任何人救。"},
+      { name:"逢坂大河","anime":"龙与虎","traits":[3,6,4,3,6,3,5,3,3,3,5,3,4,3,4],
+        keywords:["傲娇","坚强","可爱"], quote:"别把我当小孩子！"},
+      { name:"桐生战兔","anime":"罪恶王冠","traits":[6,4,5,5,5,6,3,5,4,4,4,5,4,5,6],
+        keywords:["正义","热血","冲动"], quote:"我绝不会放弃人类！"},
+      { name:"樱井遥","anime":"砂糖的幸福生活","traits":[5,6,5,6,6,7,2,6,3,2,6,5,5,6,6],
+        keywords:["温柔","治愈","开朗"], quote:"甜蜜，就像微笑。"},
+      { name:"秋月奈叶","anime":"缘之空","traits":[6,5,5,5,5,6,4,5,4,4,5,6,4,5,5],
+        keywords:["活泼","可爱","勇敢"], quote:"一起去冒险吧！"},
+      { name:"天野阳菜","anime":"天使降临到我身边！","traits":[4,5,6,4,5,3,3,4,3,2,5,4,3,4,5],
+        keywords:["温柔","善良","可爱"], quote:"我会一直陪着你。"},
+      { name:"小鸟游六花","anime":"中二病也要谈恋爱！","traits":[3,5,4,3,4,2,5,3,2,2,4,3,2,3,4],
+        keywords:["中二病","可爱","傲娇"], quote:"我才不是普通人！"},
+      { name:"日向翔阳","anime":"排球少年！！","traits":[5,6,5,5,6,7,3,6,4,3,6,5,4,5,6],
+        keywords:["热血","努力","团结"], quote:"我会成为最强的排球选手！"},
+      { name:"影山飞雄","anime":"排球少年！！","traits":[6,7,6,6,7,5,2,7,3,2,7,6,5,6,7],
+        keywords:["天才","冷静","执着"], quote:"我才不会输给任何人！"},
+      { name:"黑崎一护","anime":"死神","traits":[4,5,4,4,5,6,3,5,3,2,5,4,3,4,5],
+        keywords:["正义感","勇敢","执着"], quote:"我会保护我的朋友们！"},
+      { name:"朽木露琪亚","anime":"死神","traits":[3,4,5,3,4,5,2,4,2,1,4,3,2,3,4],
+        keywords:["坚强","冷静","执着"], quote:"我不会放弃任何人。"}
+    ];
+
+    // 4. 动态生成题目
+    const form = document.getElementById("quiz-form");
+    questions.forEach((txt, i) => {
+      const div = document.createElement("div");
+      div.className = "question";
+      div.innerHTML = `
+        <label>${i + 1}. ${txt}</label>
+        <input type="range" name="q${i}" min="1" max="7" value="4"/>
+        <div class="slider-labels">
+          <span class="left-label">${sliderLabels[i].left}</span>
+          <span class="right-label">${sliderLabels[i].right}</span>
+        </div>
+      `;
+      form.appendChild(div);
+    });
+    form.innerHTML += `<button type="submit">提交</button>`;
+
+    // 5. 计算匹配并展示结果（删除了图片生成相关部分）
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const answers = Array.from(form.querySelectorAll("input[type='range']")).map(i => +i.value);
+      // 前15题构成用户 15 维特质向量
+      const userVec = answers.slice(0, 15);
+      // 用欧氏距离计算每个角色的匹配度
+      const dists = characters.map(ch => {
+        const sum = ch.traits.reduce((s, v, i) => s + Math.pow(v - userVec[i], 2), 0);
+        return { ch, dist: Math.sqrt(sum) };
+      });
+      dists.sort((a, b) => a.dist - b.dist);
+      const top3 = dists.slice(0, 3);
+      const resDiv = document.getElementById("result");
+      resDiv.innerHTML = "<h2>匹配结果 Top 3</h2>";
+      top3.forEach(({ ch, dist }) => {
+        const sim = Math.max(0, Math.round((1 - dist / (15 * 3)) * 100));
+        resDiv.innerHTML += `
+          <div class="card">
+            <div class="card-content">
+              <h3>${ch.name}<br/><small>《${ch.anime}》</small></h3>
+              <p>关键词：${ch.keywords.join(" / ")}</p>
+              <blockquote>“${ch.quote}”</blockquote>
+              <p>相似度：${sim}%</p>
+            </div>
+          </div>
+        `;
+      });
+    });
+  </script>
+</body>
+</html>
